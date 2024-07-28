@@ -65,7 +65,7 @@ const Location = () => {
         const totaldistance = traveldistance(lat1, lon1, lat2, lon2).toFixed(4);
         console.log(totaldistance);
         setdistance(totaldistance);
-        if (totaldistance <= 50) {
+        if (totaldistance <= 6) {
             audioRef.current.play();
             console.log("Ring");
         }
