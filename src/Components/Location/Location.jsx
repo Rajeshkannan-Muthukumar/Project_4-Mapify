@@ -9,7 +9,7 @@ const Location = () => {
     const [searcharea, setsearcharea] = useState("");
     const [destinationlocation, setdestinationlocation] = useState({ lat: 0, lon: 0 });
     const [distance, setdistance] = useState(0);
-    const [error, setError] = useState('');
+    // const [error, setError] = useState('');
     useEffect(() => {
         const geo = navigator.geolocation;
         const watchId = geo.watchPosition(userCoords);
@@ -36,7 +36,8 @@ const Location = () => {
             const data = await response.json();
             if (data.length > 0) {
                 const { lat, lon } = data[0];
-                console.log(lat, lon);
+                console.log("latitude :" ,lat);
+                console.log("longitude :",lon);
                 return { lat, lon };
             } else {
                 alert('No results found, Enter Station  name correctly');
@@ -63,7 +64,7 @@ const Location = () => {
     };
     const calculatedistancehandler = (lat1, lon1, lat2, lon2) => {
         const totaldistance = traveldistance(lat1, lon1, lat2, lon2).toFixed(4);
-        console.log(totaldistance);
+        console.log("distance : " ,totaldistance);
         setdistance(totaldistance);
         if (totaldistance <= 6) {
             audioRef.current.play();
