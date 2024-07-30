@@ -8,10 +8,11 @@ const Location2 = () => {
     const [searcharea, setsearcharea] = useState("");
     const [destinationlocation, setdestinationlocation] = useState({ lat: 0, lon: 0 });
     const [distance, setdistance] = useState(0);
+    const [alarmEnabled, setAlarmEnabled] = useState(false);
 
     useEffect(() => {
         const geo = navigator.geolocation;
-        const watchId = geo.watchPosition(userCoords);
+        const watchId = geo.watchPosition(userCoords, handleError, { enableHighAccuracy: true });
         return () => geo.clearWatch(watchId);
     }, []);
 
@@ -24,7 +25,7 @@ const Location2 = () => {
                 destinationlocation.lon
             );
         }
-    }, [userlocation, destinationlocation]);
+    }, [userlocation, destinationlocation, alarmEnabled]);
 
     const userCoords = (position) => {
         const latitude = position.coords.latitude;
@@ -33,9 +34,14 @@ const Location2 = () => {
         console.log("User location updated:", latitude, longitude);
     };
 
+    const handleError = (error) => {
+        console.error("Geolocation error:", error);
+        alert("Error retrieving your location. Please ensure location services are enabled.");
+    };
+
     const fetchGeocode = async (dlocation) => {
         const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dlocation)}`;
-            
+
         try {
             const response = await fetch(url);
             const data = await response.json();
@@ -44,8 +50,8 @@ const Location2 = () => {
                 console.log("Destination location:", lat, lon);
                 return { lat, lon };
             } else {
-                alert('No results found, Enter Station  name correctly');
-                setsearcharea("")
+                alert('No results found, Enter Station name correctly');
+                setsearcharea("");
             }
         } catch (error) {
             console.error('Geocoding API error:', error);
@@ -61,6 +67,7 @@ const Location2 = () => {
         const destination = await fetchGeocode(searcharea);
         if (destination) {
             setdestinationlocation(destination);
+            setAlarmEnabled(true);  // Enable the alarm for the new destination
         }
     };
 
@@ -72,7 +79,7 @@ const Location2 = () => {
         const totaldistance = traveldistance(lat1, lon1, lat2, lon2).toFixed(4);
         console.log("Distance calculated:", totaldistance);
         setdistance(totaldistance);
-        if (totaldistance <= 6) {
+        if (totaldistance <= 6 && alarmEnabled) {
             audioRef.current.play();
             console.log("Ring");
         }
@@ -82,9 +89,10 @@ const Location2 = () => {
         audioRef.current.currentTime = 0;
         audioRef.current.pause();
         console.log("Not Ring");
-        setuserlocation({ latitude: 0, longitude: 0 });
+        setAlarmEnabled(false); // Disable the alarm
         setdistance(0);
-        setsearcharea("")
+        setsearcharea("");
+        setdestinationlocation({ lat: 0, lon: 0 }); // Reset destination location as well
     };
 
     return (
